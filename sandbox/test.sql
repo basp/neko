@@ -1,0 +1,40 @@
+USE neko;
+GO
+
+CREATE MESSAGE TYPE [fubar]
+	VALIDATION = NONE;
+GO
+
+CREATE CONTRACT [fubar]
+(
+	[fubar] SENT BY INITIATOR
+);
+GO
+
+CREATE QUEUE InitiatorQueue;
+GO
+
+CREATE QUEUE TargetQueue;
+GO
+
+CREATE SERVICE InitiatorService ON QUEUE InitiatorQueue ([fubar]);
+GO
+
+CREATE SERVICE TargetService ON QUEUE TargetQueue ([fubar]);
+GO
+
+DECLARE @ch UNIQUEIDENTIFIER
+DECLARE @msg NVARCHAR(128)
+
+BEGIN DIALOG CONVERSATION @ch
+FROM SERVICE InitiatorService TO SERVICE 'TargetService'
+ON CONTRACT [fubar]
+WITH ENCRYPTION = OFF
+
+SET @msg = N'foo bar quux';
+
+SEND ON CONVERSATION @ch MESSAGE TYPE [fubar] (@msg);
+GO
+
+RECEIVE TOP(1) * FROM [TargetQueue];
+GO
