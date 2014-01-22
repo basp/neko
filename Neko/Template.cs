@@ -6,9 +6,9 @@
 
     public class Template
     {
-        static Regex Regex = new Regex(@":([a-zA-Z_][a-zA-Z0-9_]*)");
+        private static Regex Regex = new Regex(@":([a-zA-Z_][a-zA-Z0-9_]*)");
 
-        readonly string text;
+        private readonly string text;
 
         public Template(string text)
         {

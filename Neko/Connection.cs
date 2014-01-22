@@ -5,7 +5,7 @@
 
     public class Connection
     {
-        readonly string connectionString;
+        private readonly string connectionString;
 
         public Connection(string connectionString)
         {
