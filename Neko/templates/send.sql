@@ -1,0 +1,29 @@
+﻿USE [:database];
+
+DECLARE @ch UNIQUEIDENTIFIER
+DECLARE @msg NVARCHAR(MAX);
+
+BEGIN TRY
+	BEGIN TRANSACTION;
+
+	BEGIN DIALOG CONVERSATION @ch
+		FROM SERVICE [:from]
+		TO SERVICE ':to'
+		ON CONTRACT [//neko/contract]
+		WITH ENCRYPTION = OFF;
+
+	SET @msg = '<request>:msg</request>';
+
+	SEND ON CONVERSATION @ch
+		MESSAGE TYPE [//neko/request]
+		(@msg);
+
+	COMMIT;
+END TRY
+BEGIN CATCH
+	ROLLBACK TRANSACTION;
+	
+	SELECT 
+		ERROR_NUMBER() AS err_num, 
+		ERROR_MESSAGE() AS err_msg
+END CATCH
