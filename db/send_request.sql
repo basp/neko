@@ -11,7 +11,7 @@ begin dialog @ch
 	on contract [//neko/contract]
 	with encryption = off;
 
-declare @msg nvarchar(max) = '<request>sample request</request>';
+declare @msg nvarchar(max) = '<request>foo</request>';
 send on conversation @ch message type [//neko/request] (@msg);
 
 commit;
