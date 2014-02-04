@@ -20,11 +20,11 @@ class Cmd:
         return "Cmd{verb: '%s'}" % self.verb
 
 def parse(tokens):
-    return Cmd('foo')
+    return Cmd(tokens[0])
 
 class Parsing(unittest.TestCase):
     def test_parse_verb(self):
-        cmd = parse(['foo bar quux'])
+        cmd = parse(['foo', 'bar', 'quux'])
         self.assertEqual('foo', cmd.verb)
         self.assertEqual("Cmd{verb: 'foo'}", str(cmd))
 
