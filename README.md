@@ -15,3 +15,8 @@ Just go `python .\main.py` and that's it.
 
 ### Features
 It's a console. It reads a string command from the bottom line of your screen (there is a prompt there). Then it will parse that string and display the output in a text view on top (this is the main area).
+
+Of course that's not the end goal but we need at least this simple capability to get going.
+
+### Next Up
+Work on the game world (db) and interaction with command parsing.
