@@ -1954,4 +1954,53 @@ def namegen_get_sets():
 def namegen_destroy() :
     _lib.TCOD_namegen_destroy()
 
+############################
+# text module
+############################
+_lib.TCOD_text_init.restype = c_void_p
+_lib.TCOD_text_init.argtypes = [c_int, c_int, c_int, c_int, c_int]
 
+_lib.TCOD_text_set_properties.restype = None
+_lib.TCOD_text_set_properties.argtypes = [c_void_p, c_int, c_int, c_char_p, c_int]
+
+_lib.TCOD_text_set_colors.restype = None
+_lib.TCOD_text_set_colors.argtypes = [c_void_p, Color, Color, c_float]
+
+_lib.TCOD_text_update.restype = c_bool
+_lib.TCOD_text_update.argtypes = [c_void_p, Key]
+
+_lib.TCOD_text_render.restype = None
+_lib.TCOD_text_render.argtypes = [c_void_p, c_void_p]
+
+_lib.TCOD_text_get.restype = c_char_p
+_lib.TCOD_text_get.argtypes = [c_void_p]
+
+_lib.TCOD_text_reset.restype = None
+_lib.TCOD_text_reset.argtypes = [c_void_p]
+
+_lib.TCOD_text_delete.restype = None
+_lib.TCOD_text_delete.argtypes = [c_void_p]
+
+def text_init(x, y, w, h, max_chars):
+    return _lib.TCOD_text_init(x, y, w, h, max_chars)
+
+def text_set_properties(txt, cursor_char, blink_interval, prompt, tab_size):
+    _lib.TCOD_text_set_properties(txt, cursor_char, blink_interval, c_char_p(prompt), tab_size)
+
+def text_set_colors(txt, fore, back, back_transparency):
+    _lib.TCOD_text_set_colors(txt, fore, back, c_float(back_transparency))
+
+def text_update(txt, key):
+    return _lib.TCOD_text_update(txt, key)
+
+def text_render(txt, con):
+    _lib.TCOD_text_render(txt, con)
+
+def text_get(txt):
+    return _lib.TCOD_text_get(txt)
+
+def text_reset(txt):
+    _lib.TCOD_text_reset(txt)
+
+def text_delete(txt):
+    _lib.TCOD_text_delete(txt)
