@@ -27,7 +27,6 @@ class TextField:
         self.max_history = max_history
         self.history = []
         self.history_i = -1
-        self.multiline = h > 1
 
     def _insert_char(self, c):
         """Inserts a character at cursor position."""
