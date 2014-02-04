@@ -54,22 +54,22 @@ def skip_ws(s):
         i += 1
     return ''
 
-class CommandParsing(unittest.TestCase):
-    def assert_parse_words(self, s, expected):
-        words = parse_words(s)
-        self.assertEqual(len(expected), len(words))
+class Tokenizing(unittest.TestCase):
+    def assert_tokens(self, s, expected):
+        tokens = tokenize(s)
+        self.assertEqual(len(expected), len(tokens))
         for i in range(len(expected)):
-            self.assertEqual(expected[i], words[i])
+            self.assertEqual(expected[i], tokens[i])
 
     def test_parse_words(self):
         s = 'foo "bar mumble" baz" "fro"tz" bl"o"rt'
         expected = ['foo', 'bar mumble', 'baz frotz', 'blort']
-        self.assert_parse_words(s, expected)
+        self.assert_tokens(s, expected)
 
     def test_parse_words_should_strip(self):
         s = '         foo "bar mumble" baz" "fro"tz" bl"o"rt        '
         expected = ['foo', 'bar mumble', 'baz frotz', 'blort']
-        self.assert_parse_words(s, expected)
+        self.assert_tokens(s, expected)
 
 if __name__ == '__main__':
     unittest.main()

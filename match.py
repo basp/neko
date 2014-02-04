@@ -10,9 +10,20 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+import unittest
+
 def starts_with(prefix, str):
     if len(str) < len(prefix):
         return False
     if str[0:len(prefix)] == prefix:
         return True
     return False
+
+class Matching(unittest.TestCase):
+    def test_starts_with(self):
+        self.assertTrue(starts_with('foo', 'foo'))
+        self.assertTrue(starts_with('foo', 'foobar'))
+        self.assertTrue(starts_with('foo', 'foo bar'))
+
+if __name__ == '__main__':
+    unittest.main()
