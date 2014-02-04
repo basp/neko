@@ -26,7 +26,9 @@ class TextField:
         self.handlers = handlers
         self.max_history = max_history
         self.history = []
-        self.history_i = -1
+        self.history_i = -1 
+        # ^^^ Start at -1 because we'll get incremented to 0 before first read
+        # Yes, this is kinda fugly,
 
     def _insert_char(self, c):
         """Inserts a character at cursor position."""
@@ -69,7 +71,8 @@ class TextField:
         self.cursor_pos = len(self.text)
 
     def reset(self):
-        self.history_i = -1
+        # Always reset to -1 (will increment to 0 before read)
+        self.history_i = -1 
         self.cursor_pos = 0
         self.text = array.array('c')
 
