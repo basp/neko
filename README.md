@@ -18,5 +18,5 @@ It's a console. It reads a string command from the bottom line of your screen (t
 
 Of course that's not the end goal but we need at least this simple capability to get going.
 
-### Next Up
+### Next
 Work on the game world (db) and interaction with command parsing.
