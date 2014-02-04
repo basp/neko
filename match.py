@@ -24,6 +24,9 @@ class Matching(unittest.TestCase):
         self.assertTrue(starts_with('foo', 'foo'))
         self.assertTrue(starts_with('foo', 'foobar'))
         self.assertTrue(starts_with('foo', 'foo bar'))
+        self.assertFalse(starts_with('foo', 'quux'))
+        self.assertFalse(starts_with('foo', 'fo_'))
+        self.assertFalse(starts_with('foo', '_oo'))
 
 if __name__ == '__main__':
     unittest.main()
