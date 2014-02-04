@@ -15,6 +15,7 @@ import tokenizer
 import match
 import textfield
 import textview
+import command
 
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 35
@@ -43,7 +44,9 @@ def on_command(sender, args):
         text_view.lines.append(str(r))
     else:
         tokens = tokenizer.tokenize(s)
+        cmd = command.parse(tokens)
         text_view.lines.append(str(tokens))
+        text_view.lines.append(str(cmd))
 
 text_field.add_handler(on_command)
 libtcod.sys_set_fps(LIMIT_FPS)
