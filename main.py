@@ -18,17 +18,13 @@ import textview
 
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 35
-
 FONT_FLAGS = libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD
 FONT_FILE = 'fonts/dejavu12x12_gs_tc.png'
-
 LIMIT_FPS = 25
-
 TITLE = 'Neko (lost kitty)'
 
 text_field = textfield.TextField(0, SCREEN_HEIGHT - 1, SCREEN_WIDTH, 1)
 text_view = textview.TextView(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT - 1)
-
 builtins = {'me': 123} # $tags: stub, example, todo
 
 def on_command(sender, args):
@@ -46,7 +42,7 @@ def on_command(sender, args):
         text_view.lines.append(str(tokens))
 
 text_field.add_handler(on_command)
-
+libtcod.sys_set_fps(LIMIT_FPS)
 libtcod.console_set_custom_font(FONT_FILE, FONT_FLAGS)
 libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, False)
 
