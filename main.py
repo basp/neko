@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+import textfield
 
 SCREEN_WIDTH = 80
 SCREEN_HEIGHT = 50
@@ -13,11 +14,14 @@ TITLE = 'Neko (lost kitty)'
 libtcod.console_set_custom_font(FONT_FILE, FONT_FLAGS)
 libtcod.console_init_root(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, False)
 
+tf = textfield.TextField(1, 1, 40, 1)
+
 while not libtcod.console_is_window_closed():
     libtcod.console_set_default_foreground(0, libtcod.white)
-    tf.draw(0)
+    libtcod.console_clear(0)
+    tf.render(0)
     libtcod.console_flush()
-    tf.clear(0)
-    exit = handle_keys()
-    if exit:
-        break
+    key = libtcod.console_check_for_keypress(libtcod.KEY_PRESSED)
+    tf.update(key)
+    if key.vk == libtcod.KEY_ENTER:
+        tf.reset()
