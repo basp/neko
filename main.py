@@ -27,16 +27,20 @@ text_field = textfield.TextField(0, SCREEN_HEIGHT - 1, SCREEN_WIDTH, 1)
 text_view = textview.TextView(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT - 1)
 builtins = {'me': 123} # $tags: stub, example, todo
 
+def eval_str(s, globals):
+    try:
+        r = eval(s, globals)
+        return str(r)
+    except Exception as e:
+        return str(e)
+
 def on_command(sender, args):
     if args.key.vk != libtcod.KEY_ENTER:
         return
     s = text_field.get_text()
     if match.starts_with(';', s):
-        try:
-            r = eval(s[1:], builtins)
-            text_view.append(str(r))
-        except Exception as e:
-            text_view.append(str(e))
+        r = eval_str(s[1:], builtins)
+        text_view.lines.append(str(r))
     else:
         tokens = tokenizer.tokenize(s)
         text_view.lines.append(str(tokens))
