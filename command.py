@@ -20,9 +20,25 @@ PREPOSITIONS = {
     # ...
 }
 
+def _resolve_objstr(player, objstr, objs):
+    if objstr == "me":
+        return player
+    elif objstr == "here":
+        return player.location
+    else:
+        return match.object(objstr, player.contents)
+  
 def resolve(player, cmd):
-    dobj = match.object(cmd['dobjstr'], player.contents)
-    iobj = match.object(cmd['iobjstr'], player.contents)
+    dobjstr, iobjstr = cmd['dobjstr'], cmd['iobjstr']
+
+    dobj = _resolve_objstr(player, dobjstr, player.contents)
+    if dobj is None and player.location:
+        dobj = match.object(dobjstr, player.location.contents)
+
+    iobj = _resolve_objstr(player, iobjstr, player.contents)
+    if iobj is None and player.location:
+        iobj = match.object(iobjstr, player.location.contents)
+
     cmd['dobj'] = dobj
     cmd['iobj'] = iobj
     return cmd
