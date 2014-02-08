@@ -10,8 +10,8 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-import inspect
 import unittest
+import match
 
 PREPOSITIONS = {
     'with',
@@ -19,6 +19,13 @@ PREPOSITIONS = {
     'at',
     # ...
 }
+
+def resolve(player, cmd):
+    dobj = match.object(cmd['dobjstr'], player.contents)
+    iobj = match.object(cmd['iobjstr'], player.contents)
+    cmd['dobj'] = dobj
+    cmd['iobj'] = iobj
+    return cmd
 
 def parse(tokens):
     args = tokens[1:]

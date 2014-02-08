@@ -13,32 +13,39 @@
 import inspect
 import unittest
 
-class AmbiguousMatch(Exception):
+class Ambiguous:
     pass
 
-def property(this, s):
+def object(s, objects):
     found = None
-    props = inspect.getmembers(this, lambda x: not inspect.isroutine(x))
-    for p in props:
-        if p[0].startswith('__'):
-            continue
-        if p[0].startswith(s):
-            if found is None:
-                found = p
-            else:
-                raise AmbiguousMatch()
+    if not s: return found
+    for o in objects:
+        if not hasattr(o, 'names'): continue
+        if not callable(o.names): continue
+        for n in o.names():
+            if n.startswith(s):
+                if found is None:
+                    found = o
+                else:
+                    return Ambiguous
     return found
 
 class Foo:
-    def __init__(self):
-        self.bar = 'quux'
-        self.baz = 'frotz'
+    def __init__(self, name, aliases=[]):
+        self.name = name
+        self.aliases = aliases
+
+    def names(self):
+        return [self.name] + self.aliases
 
 class Matching(unittest.TestCase):
-    def test_property(self):
-        foo = Foo()
-        self.assertEqual(('bar', 'quux'), property(foo, 'bar'))
-        self.assertEqual(('baz', 'frotz'), property(foo, 'baz'))
+    def test_object(self):
+        bar = Foo('bar')
+        baz = Foo('baz')
+        objs = [bar, baz] 
+        self.assertEqual(bar, object('bar', objs))
+        self.assertEqual(baz, object('baz', objs))
+        self.assertIs(object('ba', objs), Ambiguous)
 
 if __name__ == '__main__':
     unittest.main()
