@@ -12,21 +12,20 @@
 
 import unittest
 
-class Cmd:
-    def __init__(self, verb):
-        self.verb = verb
-
-    def __str__(self):
-        return "Cmd{verb: '%s'}" % self.verb
-
 def parse(tokens):
-    return Cmd(tokens[0])
+    args = tokens[1:]
+    return {
+        'verb'      : tokens[0], 
+        'args'      : args, 
+        'argstr'    : str.join(' ', args)
+    }
 
 class Parsing(unittest.TestCase):
     def test_parse_verb(self):
         cmd = parse(['foo', 'bar', 'quux'])
-        self.assertEqual('foo', cmd.verb)
-        self.assertEqual("Cmd{verb: 'foo'}", str(cmd))
+        self.assertEqual('foo', cmd['verb'])
+        self.assertEqual('bar quux', cmd['argstr'])
+        self.assertEqual(['bar', 'quux'], cmd['args'])
 
 if __name__ == '__main__':
     unittest.main()
