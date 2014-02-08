@@ -24,7 +24,7 @@ def parse(tokens):
 
 class Parsing(unittest.TestCase):
     def test_parse_verb(self):
-        cmd = parse(['foo bar quux'])
+        cmd = parse(['foo', 'bar', 'quux'])
         self.assertEqual('foo', cmd.verb)
         self.assertEqual("Cmd{verb: 'foo'}", str(cmd))
 

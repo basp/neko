@@ -10,12 +10,11 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-import string
 import unittest
 
 def tokenize(s):
     tokens = []
-    s = string.strip(s)
+    s = s.strip()
     while len(s) > 0:
         s = skip_ws(s)
         w, s = word(s)
