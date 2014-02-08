@@ -27,7 +27,8 @@ def parse(tokens):
 preps = {
     'with',
     'using',
-    'at'
+    'at',
+    # ...
 }
 
 def parse_args(tokens):
@@ -49,7 +50,7 @@ def parse_args(tokens):
         elif maybe_prep0 in preps:
             return str.join(' ', tokens[0:i]), maybe_prep0, str.join(' ', tokens[i + 1:])
     return str.join(' ', tokens), '', ''
-            
+        
 class Parsing(unittest.TestCase):
     def test_parse_verb(self):
         cmd = parse(['foo'])
@@ -68,6 +69,7 @@ class Parsing(unittest.TestCase):
         cmd = parse(['foo', 'bar', 'quux', 'with', 'zoz', 'nix'])
         self.assertEqual('bar quux', cmd['dobjstr'])
         self.assertEqual('zoz nix', cmd['iobjstr'])
+        self.assertEqual('with', cmd['prepstr'])
 
 if __name__ == '__main__':
     unittest.main()
