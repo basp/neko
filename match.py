@@ -10,23 +10,35 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+import inspect
 import unittest
 
-def starts_with(prefix, str):
-    if len(str) < len(prefix):
-        return False
-    if str[0:len(prefix)] == prefix:
-        return True
-    return False
+class AmbiguousMatch(Exception):
+    pass
+
+def property(this, s):
+    found = None
+    props = inspect.getmembers(this, lambda x: not inspect.isroutine(x))
+    for p in props:
+        if p[0].startswith('__'):
+            continue
+        if p[0].startswith(s):
+            if found is None:
+                found = p
+            else:
+                raise AmbiguousMatch()
+    return found
+
+class Foo:
+    def __init__(self):
+        self.bar = 'quux'
+        self.baz = 'frotz'
 
 class Matching(unittest.TestCase):
-    def test_starts_with(self):
-        self.assertTrue(starts_with('foo', 'foo'))
-        self.assertTrue(starts_with('foo', 'foobar'))
-        self.assertTrue(starts_with('foo', 'foo bar'))
-        self.assertFalse(starts_with('foo', 'quux'))
-        self.assertFalse(starts_with('foo', 'fo_'))
-        self.assertFalse(starts_with('foo', '_oo'))
+    def test_property(self):
+        foo = Foo()
+        self.assertEqual(('bar', 'quux'), property(foo, 'bar'))
+        self.assertEqual(('baz', 'frotz'), property(foo, 'baz'))
 
 if __name__ == '__main__':
     unittest.main()

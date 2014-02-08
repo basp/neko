@@ -10,7 +10,15 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+import inspect
 import unittest
+
+PREPOSITIONS = {
+    'with',
+    'using',
+    'at',
+    # ...
+}
 
 def parse(tokens):
     args = tokens[1:]
@@ -24,31 +32,28 @@ def parse(tokens):
         'iobjstr'   : iobjstr
     }
 
-preps = {
-    'with',
-    'using',
-    'at',
-    # ...
-}
-
 def parse_args(tokens):
     count = len(tokens)
     for i in range(count):
         maybe_prep0 = tokens[i]
+        
         if i < count - 1:
             maybe_prep1 = str.join(' ', [maybe_prep0, tokens[i + 1]])
         else:
             maybe_prep1 = None
+        
         if i < count - 2:
             maybe_prep2 = str.join(' ', [maybe_prep1, tokens[i + 2]])
         else:
             maybe_prep2 = None
-        if maybe_prep2 in preps:
+
+        if maybe_prep2 in PREPOSITIONS:
             return str.join(' ', tokens[0:i]), maybe_prep2, str.join(' ', tokens[i + 3:])
-        elif maybe_prep1 in preps:
+        elif maybe_prep1 in PREPOSITIONS:
             return str.join(' ', tokens[0:i]), maybe_prep1, str.join(' ', tokens[i + 2:])
-        elif maybe_prep0 in preps:
+        elif maybe_prep0 in PREPOSITIONS:
             return str.join(' ', tokens[0:i]), maybe_prep0, str.join(' ', tokens[i + 1:])
+    
     return str.join(' ', tokens), '', ''
         
 class Parsing(unittest.TestCase):
