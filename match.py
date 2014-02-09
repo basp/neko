@@ -33,14 +33,33 @@ def object(s, objects):
 def verb(s, v):
     # filter out empty entries
     chunks = list(filter(None, v.split('*')))
-    # chunks should have length 1 or 2 
-    # i.e. a verb name can contain only one '*'
     if len(chunks) == 2:
         return str.join('', chunks).startswith(s)
     elif v.endswith('*'):
         return s.startswith(chunks[0])
     else:
         return s == v
+
+def verbargs(this, v, cmd):
+    if cmd['dobj'] == this:
+        a_dobj = 'this'
+    elif cmd['dobj'] == None:
+        a_dobj = 'none'
+    else:
+        a_dobj = 'any'
+
+    if cmd['iobj'] == this:
+        a_iobj = 'this'
+    elif cmd['iobj'] == None:
+        a_iobj = 'none'
+    else:
+        a_dobj = 'any'
+
+    v_dobj, v_prep, v_iobj = v.__dict__['args']
+    if v_dobj == 'any' and v_prep == 'any' and v_iobj == 'any':
+        return True
+    else:
+        return False
 
 class Foo:
     def __init__(self, name, aliases=[]):

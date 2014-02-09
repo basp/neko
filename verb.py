@@ -20,12 +20,12 @@ def verb(names, verbargs):
         return f
     return _verb
 
-def is_verb(f):
+def valid_verb(f):
     return 'names' in f.__dict__ and 'args' in f.__dict__
 
 def verbs(obj):
     routines = inspect.getmembers(obj, lambda x: inspect.isroutine(x))
-    return [f for n, f in routines if not n.startswith('__') and is_verb(f)]
+    return [f for n, f in routines if not n.startswith('__') and valid_verb(f)]
 
 class Foo:
     def none_verb(self):

@@ -29,15 +29,17 @@ def _resolve_objstr(player, objstr, objs):
     else:
         return match.object(objstr, player.contents)
   
-def _resolve_verb(verbstr, objs):
+def _resolve_verb(cmd, objs):
+    verbstr = cmd['verb']
     for o in objs:
         verbs = verb.verbs(o)
         for v in verbs:
-            names, args = v.__dict__['names'], v.__dict__['args']
-            names = names.split(' ')
-            for n in names:
-                if match.verb(verbstr, n):
-                    return v
+            if match.verbargs(o, v, cmd):
+                names, args = v.__dict__['names'], v.__dict__['args']
+                names = names.split(' ')
+                for n in names:
+                    if match.verb(verbstr, n):
+                        return v
 
 def resolve(player, cmd):
     dobjstr, iobjstr = cmd['dobjstr'], cmd['iobjstr']
@@ -53,8 +55,7 @@ def resolve(player, cmd):
     cmd['dobj'] = dobj
     cmd['iobj'] = iobj
 
-    verbstr = cmd['verb']
     objs = [player, player.location, dobj, iobj]
-    cmd['f'] = _resolve_verb(verbstr, objs)
+    cmd['f'] = _resolve_verb(cmd, objs)
 
     return cmd

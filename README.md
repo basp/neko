@@ -6,6 +6,8 @@ Neko operates on text commands with the following syntax:
 
     <verb> [<direct object>] [<preposition> <indirect object>]
 
+Command parsing is broken up into a few discrete stages which are explained below.
+
 #### Tokenizing
 First, the command is tokenized so that (for example) `'foo "bar mumble" baz" "fro"tz" bl"o"rt'` is tokenized into `['foo', 'bar mumble', 'baz frotz', 'blort']`. This job is performed by the `tokenizer.tokenize` function. 
 
