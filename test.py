@@ -25,21 +25,40 @@ def parse(player, s):
 def prompt():
     return Style.BRIGHT + Fore.CYAN + "> " + Style.RESET_ALL
 
-class Player(world.Object):
-    @verb('l*ook', ('none', 'none', 'none'))
+class Root(world.Object):
+    def description(self):
+        return self.description
+
+    def describe(self, v):
+        self.description = v
+
+    def look_self(self):
+        return self.description()
+
+    def tell(self, v):
+        if self.is_player:
+            if type(v) is list:
+                for s in v: print(s)
+            else:
+                print(v)
+
+    def moveto(self, where):
+        move(self, where)
+
+class Player(Root):
+    @verb('l*ook', ('any', 'any', 'any'))
     def look(self, *args, **kwargs):
         print("You look around.")
 
-    @verb('l*ook', ('any', 'none', 'none'))
-    def look_dobj(self, *args, **kwargs):
-        print("You look at something.")
-
-class Room(world.Object):
+class Room(Root):
     pass
 
+foo = Root()
+foo.name = 'foo'
 player = Player()
 room = Room()
-player.move(room)
+world.move(player, room)
+world.move(foo, room)
 
 if __name__ == '__main__':
     while True:

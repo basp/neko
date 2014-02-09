@@ -19,19 +19,16 @@ class Object:
         self.location = None
         self.contents = set()
         self.is_player = False
+        self.aliases = set()
 
     def names(self):
-        return {self.name}
+        return {self.name} | self.aliases
 
-    def title(self):
-        return self.name
-
-    def move(self, where):
-        if self.location:
-            self.location.contents -= {self}
-        self.location = where
-        where.contents |= {self}
-        return self
+def move(what, where):
+    if what.location:
+        what.location.contents -= {what}
+    what.location = where
+    where.contents |= {what}
 
 def _resolve_objstr(player, objstr, objs):
     if objstr == "me":
