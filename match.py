@@ -41,20 +41,23 @@ def verb(s, v):
         return s == v
 
 def _match_obj_arg(this, obj, arg):
-    if arg == 'this':
-        return this == obj
-    elif arg == 'none':
+    if arg == 'none':
         return obj is None
-    else:
+    elif arg == 'this':
+        return obj == this
+    elif arg == 'any':
         return True
+    else:
+        return False
 
 def _match_pred_arg(prep, arg):
-    if arg == 'any':
-        return True
-    elif arg == 'none':
+    if arg == 'none':
         return prep == ''
+    elif arg == 'any':
+        return True
     else:
-        return arg == prep
+        preps = arg.split(' ')
+        return prep in set(preps)
 
 def verbargs(this, args, cmd):
     dobj = cmd['dobj']
