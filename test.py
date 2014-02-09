@@ -8,7 +8,7 @@ from ansi import Style, Fore, Back
 def parse(player, s):
     tokens = tokenizer.tokenize(s)
     cmd = command.parse(tokens)
-    return command.resolve(player, cmd)
+    return world.resolve(player, cmd)
 
 def prompt():
     return Style.BRIGHT + Fore.CYAN + "> " + Style.RESET_ALL
