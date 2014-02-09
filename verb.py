@@ -10,6 +10,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+import inspect
 import unittest
 
 def verb(names, verbargs):
@@ -19,9 +20,23 @@ def verb(names, verbargs):
         return f
     return _verb
 
+def is_verb(f):
+    return 'names' in f.__dict__ and 'args' in f.__dict__
+
+def verbs(obj):
+    routines = inspect.getmembers(obj, lambda x: inspect.isroutine(x))
+    return [f for n, f in routines if not n.startswith('__') and is_verb(f)]
+
 class Foo:
+    def none_verb(self):
+        pass
+
     @verb('b*ar', ('any', 'any', 'any'))
     def bar(self, *args, **kwargs):
+        pass
+
+    @verb('f*oo', ('this', 'none', 'this'))
+    def foo(self, *args, **kwargs):
         pass
 
 class Metadata(unittest.TestCase):
@@ -31,3 +46,10 @@ class Metadata(unittest.TestCase):
         self.assertTrue('args' in foo.bar.__dict__)
         self.assertEqual('b*ar', foo.bar.__dict__['names'])
         self.assertEqual(('any', 'any', 'any'), foo.bar.__dict__['args'])
+
+    def test_list(self):
+        foo = Foo()
+        vbs = verbs(foo)
+        self.assertEqual(2, len(vbs))
+        self.assertEqual('b*ar', vbs[0].__dict__['names'])
+        self.assertEqual(('any', 'any', 'any'), vbs[0].__dict__['args'])

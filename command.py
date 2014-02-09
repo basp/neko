@@ -28,6 +28,9 @@ def _resolve_objstr(player, objstr, objs):
     else:
         return match.object(objstr, player.contents)
   
+def _resolve_verb(verbstr, objs):
+    return lambda x: None
+
 def resolve(player, cmd):
     dobjstr, iobjstr = cmd['dobjstr'], cmd['iobjstr']
 
@@ -41,6 +44,11 @@ def resolve(player, cmd):
 
     cmd['dobj'] = dobj
     cmd['iobj'] = iobj
+
+    verbstr = cmd['verbstr']
+    objs = [player, player.location, dobj, iobj]
+    cmd['f'] = _resolve_verb(verbstr, objs)
+
     return cmd
 
 def parse(tokens):
