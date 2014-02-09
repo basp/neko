@@ -18,7 +18,12 @@ class Player(world.Object):
     def look(self, *args, **kwargs):
         print("You look around.")
 
+class Room(world.Object):
+    pass
+
 player = Player()
+room = Room()
+player.move(room)
 
 if __name__ == '__main__':
     while True:

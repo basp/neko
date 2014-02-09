@@ -2,7 +2,7 @@ class Object:
     def __init__(self, name=''):
         self.name = name
         self.location = None
-        self.contents = {}
+        self.contents = set()
         self.is_player = False
 
     def names(self):
