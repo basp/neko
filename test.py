@@ -1,34 +1,9 @@
 import tokenizer
 import command
+import world
 
+from verb import verb
 from ansi import Style, Fore, Back
-
-class Object:
-    def __init__(self, name=''):
-        self.name = name
-        self.location = None
-        self.contents = []
-
-    def names(self):
-        return [self.name]
-
-    def title(self):
-        return "a " + self.name
-
-class Player(Object):
-    def __init__(self, name):
-        super().__init__()
-        self.name = name
-
-    def title(self):
-        return self.name
-
-    def look(self, **kwargs):
-        dobj = kwargs['dobj']
-        if dobj:
-            print("You look at " + dobj.title())
-        else:
-            print("You look around.")
 
 def parse(player, s):
     tokens = tokenizer.tokenize(s)
@@ -38,26 +13,12 @@ def parse(player, s):
 def prompt():
     return Style.BRIGHT + Fore.CYAN + "> " + Style.RESET_ALL
 
-def lookup_verb(obj, verb):
-    if hasattr(obj, verb):
-        return getattr(obj, verb)
+class Player(world.Object):
+    @verb('l*ook', ('any', 'any', 'any'))
+    def look(self, *args, **kwargs):
+        print("You look around.")
 
-def move(what, where):
-    where.contents.append(what)
-    what.location = where
-
-foo = Object('foo')
-bar = Object('bar')
-baz = Object('baz')
-quux = Object('quux')
-room = Object('void')
-player = Player('player')
-
-move(bar, player)
-move(baz, player)
-move(quux, room)
-move(foo, room)
-move(player, room)
+player = Player()
 
 if __name__ == '__main__':
     while True:
@@ -65,5 +26,5 @@ if __name__ == '__main__':
         cmd = parse(player, s)
         verb = cmd['verb']
         if verb == '@quit': break    
-        f = lookup_verb(player, verb)
-        if callable(f(**cmd)): f()
+        print(cmd)
+        if callable(cmd['f']): cmd['f']()

@@ -12,6 +12,7 @@
 
 import unittest
 import match
+import verb
 
 PREPOSITIONS = {
     'with',
@@ -29,7 +30,14 @@ def _resolve_objstr(player, objstr, objs):
         return match.object(objstr, player.contents)
   
 def _resolve_verb(verbstr, objs):
-    return lambda x: None
+    for o in objs:
+        verbs = verb.verbs(o)
+        for v in verbs:
+            names, args = v.__dict__['names'], v.__dict__['args']
+            names = names.split(' ')
+            for n in names:
+                if match.verb(verbstr, n):
+                    return v
 
 def resolve(player, cmd):
     dobjstr, iobjstr = cmd['dobjstr'], cmd['iobjstr']
@@ -45,7 +53,7 @@ def resolve(player, cmd):
     cmd['dobj'] = dobj
     cmd['iobj'] = iobj
 
-    verbstr = cmd['verbstr']
+    verbstr = cmd['verb']
     objs = [player, player.location, dobj, iobj]
     cmd['f'] = _resolve_verb(verbstr, objs)
 
