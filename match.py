@@ -56,7 +56,7 @@ def _match_pred_arg(prep, arg):
     elif arg == 'any':
         return True
     else:
-        preps = arg.split(' ')
+        preps = [x.strip() for x in arg.split(',')]
         return prep in set(preps)
 
 def verbargs(this, args, cmd):
@@ -94,6 +94,29 @@ class Matching(unittest.TestCase):
         self.assertFalse(verb('quux', 'foo*bar'))
         self.assertFalse(verb('fooq', 'foo*bar'))
         self.assertTrue(verb('fooba', 'foo*bar'))
+
+    def test_verbargs(self):
+        args = ('none', 'none', 'none')
+        cmd = {'dobj': None, 'prepstr': '', 'iobj': None}
+        self.assertTrue(verbargs(None, args, cmd))
+        foo = Foo('baz')
+        bar = Foo('bar')
+        cmd['dobj'] = foo
+        self.assertFalse(verbargs(None, args, cmd))
+        args = ('this', 'none', 'none')
+        self.assertTrue(verbargs(foo, args, cmd))
+        cmd['dobj'] = None
+        args = ('any', 'any', 'any')
+        self.assertTrue(verbargs(None, args, cmd))
+        args = ('this', 'with, using', 'any')
+        cmd['dobj'] = foo
+        cmd['prepstr'] = 'using'
+        cmd['iobj'] = bar
+        self.assertTrue(verbargs(foo, args, cmd))
+        cmd['prepstr'] = 'quux'
+        self.assertFalse(verbargs(foo, args, cmd))
+        cmd['prepstr'] = 'with'
+        self.assertTrue(verbargs(foo, args, cmd))
 
 if __name__ == '__main__':
     unittest.main()
