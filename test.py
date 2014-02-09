@@ -14,9 +14,13 @@ def prompt():
     return Style.BRIGHT + Fore.CYAN + "> " + Style.RESET_ALL
 
 class Player(world.Object):
-    @verb('l*ook', ('any', 'any', 'any'))
+    @verb('l*ook', ('none', 'none', 'none'))
     def look(self, *args, **kwargs):
         print("You look around.")
+
+    @verb('l*ook', ('any', 'none', 'none'))
+    def look_dobj(self, *args, **kwargs):
+        print("You look at something.")
 
 class Room(world.Object):
     pass

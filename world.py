@@ -34,8 +34,9 @@ def _resolve_verb(cmd, objs):
     for o in objs:
         verbs = verb.verbs(o)
         for v in verbs:
-            if match.verbargs(o, v, cmd):
-                names, args = v.__dict__['names'], v.__dict__['args']
+            names, args = v.__dict__['names'], v.__dict__['args']
+            print(args)
+            if match.verbargs(o, args, cmd):
                 names = names.split(' ')
                 for n in names:
                     if match.verb(verbstr, n):

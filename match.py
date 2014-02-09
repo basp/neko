@@ -40,26 +40,31 @@ def verb(s, v):
     else:
         return s == v
 
-def verbargs(this, v, cmd):
-    if cmd['dobj'] == this:
-        a_dobj = 'this'
-    elif cmd['dobj'] == None:
-        a_dobj = 'none'
+def _match_obj_arg(this, obj, arg):
+    if arg == 'this':
+        return this == obj
+    elif arg == 'none':
+        return obj is None
     else:
-        a_dobj = 'any'
-
-    if cmd['iobj'] == this:
-        a_iobj = 'this'
-    elif cmd['iobj'] == None:
-        a_iobj = 'none'
-    else:
-        a_dobj = 'any'
-
-    v_dobj, v_prep, v_iobj = v.__dict__['args']
-    if v_dobj == 'any' and v_prep == 'any' and v_iobj == 'any':
         return True
+
+def _match_pred_arg(prep, arg):
+    if arg == 'any':
+        return True
+    elif arg == 'none':
+        return prep == ''
     else:
-        return False
+        return arg == prep
+
+def verbargs(this, args, cmd):
+    dobj = cmd['dobj']
+    iobj = cmd['iobj']
+    prep = cmd['prepstr']
+    dobj_arg, prep_arg, iobj_arg = args
+    result = _match_obj_arg(this, dobj, dobj_arg)
+    result = result and _match_obj_arg(this, iobj, iobj_arg)
+    result = result and _match_pred_arg(prep, prep_arg)
+    return result
 
 class Foo:
     def __init__(self, name, aliases=[]):
