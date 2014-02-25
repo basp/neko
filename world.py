@@ -56,7 +56,6 @@ def resolve(player, cmd):
 
     dobj = _resolve_objstr(player, dobjstr, player.contents)
     if dobj is None and player.location:
-        print(player.location.contents)
         dobj = match.object(dobjstr, player.location.contents)
 
     iobj = _resolve_objstr(player, iobjstr, player.contents)

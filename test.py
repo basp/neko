@@ -69,13 +69,19 @@ class Player(Actor):
     def kill(self, *args, **kwargs):
         if kwargs['dobj']:
             if kwargs['dobj'] == kwargs['player']:
-                print("There are better ways to kill yourself.")
+                self.kill_myself(*args, **kwargs)
             else:
                 print("You attack %s!" % kwargs['dobj'].name)
         elif kwargs['dobjstr']:
             print("There is no `%s' here." % kwargs['dobjstr'])
         else:
             print("Kill what?")
+
+    def kill_myself(self, *args, **kwargs):
+        if self.wielded:
+            print("Wow you are wielding a weapon... FAileD TO CoMPUtE~")
+        else:
+            print("You try to strangle yourself but that doesn't really work.")
 
     @verb('h*elp', ('any', 'any', 'any'))
     def help(self, *args, **kwargs):
@@ -137,6 +143,7 @@ foo = Root()
 foo.name = 'foo'
 player = Player()
 player.is_player = True
+player.wielded = 'fubar'
 room = Room()
 room.coords = (0, 0, 0)
 room._render_map_stub()
@@ -145,11 +152,21 @@ world.move(foo, room)
 area = Area()
 world.move(room, area)
 
-if __name__ == '__main__':
+def syntax_highlighting_stub(s):
+    s = str(s)
+    s = s.replace(':', Style.BRIGHT + Fore.YELLOW + ':' + Style.RESET_ALL)
+    s = s.replace('{', Style.BRIGHT + Fore.CYAN + '{' + Style.RESET_ALL)
+    s = s.replace('}', Style.BRIGHT + Fore.CYAN + '}' + Style.RESET_ALL)
+    return s
+
+def loop():
     while True:
         s = input(prompt())
         cmd = parse(player, s)
+        print(syntax_highlighting_stub(cmd))
         if cmd['verb'] == '@quit': 
             break
-        print(cmd)
-        exec(cmd, player)    
+        exec(cmd, player)        
+
+if __name__ == '__main__':
+    loop()
