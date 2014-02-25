@@ -40,9 +40,9 @@ def verb(s, v):
     else:
         return s == v
 
-def _match_obj_arg(this, obj, arg):
+def _match_obj_arg(this, obj, objstr, arg):
     if arg == 'none':
-        return obj is None
+        return obj is None and objstr == ''
     elif arg == 'this':
         return obj == this
     elif arg == 'any':
@@ -60,12 +60,12 @@ def _match_pred_arg(prep, arg):
         return prep in set(preps)
 
 def verbargs(this, args, cmd):
-    dobj = cmd['dobj']
-    iobj = cmd['iobj']
+    dobj, dobjstr = cmd['dobj'], cmd['dobjstr']
+    iobj, iobjstr = cmd['iobj'], cmd['iobjstr']
     prep = cmd['prepstr']
     dobj_arg, prep_arg, iobj_arg = args
-    result = _match_obj_arg(this, dobj, dobj_arg)
-    result = result and _match_obj_arg(this, iobj, iobj_arg)
+    result = _match_obj_arg(this, dobj, dobjstr, dobj_arg)
+    result = result and _match_obj_arg(this, iobj, iobjstr, iobj_arg)
     result = result and _match_pred_arg(prep, prep_arg)
     return result
 

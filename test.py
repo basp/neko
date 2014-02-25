@@ -17,14 +17,6 @@ import world
 from verb import verb
 from ansi import Style, Fore, Back
 
-def parse(player, s):
-    tokens = tokenizer.tokenize(s)
-    cmd = command.parse(tokens)
-    return world.resolve(player, cmd)
-
-def prompt():
-    return Style.BRIGHT + Fore.CYAN + "> " + Style.RESET_ALL
-
 class Root(world.Object):
     def description(self):
         return self.description
@@ -65,6 +57,14 @@ class Player(Actor):
         else:
             print("You are nowhere.")
 
+    @verb('l*ook', ('any', 'none', 'none'))
+    def look_thing(self, *args, **kwargs):
+        player, thing = kwargs['player'], kwargs['dobj']
+        if thing:
+            player.tell("You look at something.")
+        else:
+            player.tell("There is no `%s' here." % kwargs['dobjstr'])
+
     @verb('k*ill', ('any', 'none', 'none'))
     def kill(self, *args, **kwargs):
         if kwargs['dobj']:
@@ -76,6 +76,10 @@ class Player(Actor):
             print("There is no `%s' here." % kwargs['dobjstr'])
         else:
             print("Kill what?")
+
+    @verb('h*elp', ('any', 'any', 'any'))
+    def help(self, *args, **kwargs):
+        print("You yell for help. There is no answer.")
 
 class Room(Root):
     def __init__(self):
@@ -114,6 +118,21 @@ def generate_map(area):
             if y > max_y: max_y = y
         print(levels[z])
 
+
+def parse(player, s):
+    tokens = tokenizer.tokenize(s)
+    cmd = command.parse(tokens)
+    return world.resolve(player, cmd)
+
+def exec(cmd, player):
+    if callable(cmd['f']):
+        args = cmd['args']
+        cmd.update({'player': player}) 
+        cmd['f'](args, **cmd)    
+
+def prompt():
+    return Style.BRIGHT + Fore.CYAN + "> " + Style.RESET_ALL
+
 foo = Root()
 foo.name = 'foo'
 player = Player()
@@ -124,12 +143,7 @@ room._render_map_stub()
 world.move(player, room)
 world.move(foo, room)
 area = Area()
-
-def exec(cmd, player):
-    if callable(cmd['f']):
-        args = cmd['args']
-        cmd.update({'player': player}) 
-        cmd['f'](args, **cmd)    
+world.move(room, area)
 
 if __name__ == '__main__':
     while True:
