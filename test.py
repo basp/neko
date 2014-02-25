@@ -132,7 +132,6 @@ def exec(cmd, player):
         cmd['f'](args, **cmd)    
 
 if __name__ == '__main__':
-    print(generate_map(area))
     while True:
         s = input(prompt())
         cmd = parse(player, s)
