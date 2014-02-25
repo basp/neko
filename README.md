@@ -1,5 +1,7 @@
 ## 猫 (neko)
-Neko is an experiment to build a single player game foundation on the LambdaMOO world idiom. LambdaMOO is a multi-user programmable object environment. It feels a bit like Smalltalk but it's more specialized and multiple users can edit and use objects at the same time at runtime, it also has a task scheduler and no graphics. Not suprisingly, it also originated at Palo Alto during the end of the first golden age of software (or was it the second?).
+Neko is an experiment to build a single player game foundation on the LambdaMOO world idiom. LambdaMOO is a multi-user programmable object environment. It feels a bit like Smalltalk but it's more specialized and multiple users can edit and use objects at the same time at runtime, it also has a task scheduler and no graphics. Not suprisingly, it also originated at Palo Alto during the end of the first golden age of software.
+
+The LambdaMOO design is quite elegant and the code is fantastic to behold. It has a lot of stuff going on and should be recommended reading for every programmer.
 
 ## Commands
 Neko operates on text commands with the following syntax:
