@@ -21,7 +21,8 @@ def ps(text, who=None, **kwargs):
     if who is None: 
         who = kwargs['player']
     output = ''
-    for i in range(len(text)):
+    i = 0
+    while i < len(text):
         if text[i] == '%':
             code = text[i + 1]
             if code == '%':
@@ -42,8 +43,10 @@ def ps(text, who=None, **kwargs):
                 output += kwargs['iobj'].name
             elif code == 't':
                 output += kwargs['this'].name
+            i += 1
         else:
             output += text[i]
+        i += 1
     return output
 
 class Foo:
@@ -54,6 +57,7 @@ class Foo:
         self.pr = 'himself'
         self.name = 'Foo'
         self.bar = 'quux'
+        self.plural = False
 
 class TestCase(unittest.TestCase):
     def test_subjective(self):

@@ -48,13 +48,15 @@ def _resolve_verb(cmd, objs):
                 names = names.split(' ')
                 for n in names:
                     if match.verb(verbstr, n):
-                        return v
+                        return o, v
+    return None, None
 
 def resolve(player, cmd):
     dobjstr, iobjstr = cmd['dobjstr'], cmd['iobjstr']
 
     dobj = _resolve_objstr(player, dobjstr, player.contents)
     if dobj is None and player.location:
+        print(player.location.contents)
         dobj = match.object(dobjstr, player.location.contents)
 
     iobj = _resolve_objstr(player, iobjstr, player.contents)
@@ -65,6 +67,6 @@ def resolve(player, cmd):
     cmd['iobj'] = iobj
 
     objs = [player, player.location, dobj, iobj]
-    cmd['f'] = _resolve_verb(cmd, objs)
+    cmd['this'], cmd['f'] = _resolve_verb(cmd, objs)
 
     return cmd

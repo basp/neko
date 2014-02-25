@@ -20,6 +20,7 @@ def object(s, objects):
     found = None
     if not s: return found
     for o in objects:
+        print(o.names())
         if not hasattr(o, 'names'): continue
         if not callable(o.names): continue
         for n in o.names():
