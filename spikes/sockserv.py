@@ -16,7 +16,7 @@ if __name__ == '__main__':
     HOST, PORT = "localhost", 7777
     server = ThreadedTCPServer((HOST, PORT), TestHandler)
     server_thread = threading.Thread(target=server.serve_forever)
-    server_thread.deamon = True
+    server_thread.daemon = True
     server_thread.start()
     input("Press enter to shutdown")
     server.shutdown()
