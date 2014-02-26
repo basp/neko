@@ -89,12 +89,11 @@ class Player(Actor):
 
     @verb('l*ook', ('none', 'none', 'none'))
     def look_around(self, *args, **kwargs):
-        player = kwargs['player']
-        if player.location:
-            d = player.location.render(*args, **kwargs)
+        if self.location:
+            d = self.location.render(*args, **kwargs)
             d.append('')
-            d.append(player.location.render_exits())
-            player.tell(d)
+            d.append(self.location.render_exits())
+            self.tell(d)
         else:
             print("You are nowhere.")
 
