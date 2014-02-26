@@ -1,5 +1,14 @@
 import unittest
 
+def wrap(s, max_len):
+    last_ws = 0
+    for i in range(len(s)):
+        if s[i] == ' ':
+            last_ws = i
+        if i == max_len:
+            return s[:last_ws], s[last_ws + 1:]
+    return s, ''
+
 def _prop(obj, prop):
     if hasattr(obj, prop):
         return getattr(obj, prop)
@@ -66,6 +75,13 @@ class TestCase(unittest.TestCase):
         for text, expected in cases:
             actual = pronoun_sub(text, who)
             self.assertEqual(actual, expected)
+
+    def test_wrap(self):
+        s = '1 3 5 7 9'
+        self.assertEqual(wrap(s, 1), ('1', '3 5 7 9'))
+        self.assertEqual(wrap(s, 2), ('1', '3 5 7 9'))
+        self.assertEqual(wrap(s, 3), ('1 3', '5 7 9'))
+        self.assertEqual(wrap(s, 4), ('1 3', '5 7 9'))
 
 if __name__ == '__main__':
     unittest.main()

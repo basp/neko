@@ -13,9 +13,12 @@
 import tokenizer
 import command
 import world
+import string_utils
 
 from verb import verb
 from ansi import Style, Fore, Back
+
+MAX_COLS = 110
 
 class Root(world.Object):
     def description(self):
@@ -53,7 +56,9 @@ class Player(Actor):
     def look_around(self, *args, **kwargs):
         player = kwargs['player']
         if player.location:
-            player.tell(player.location.map)
+            # player.tell(player.location.map)
+            d = player.location.format_description()
+            player.tell(d)
         else:
             print("You are nowhere.")
 
@@ -92,45 +97,58 @@ class Room(Root):
         super().__init__(self)
         self.area = None
         self.coords = None
-        self.area_icon = Fore.GREEN + '//'
-        self.map_icon = Fore.WHITE + '[]'
+        self.area_icon = Fore.WHITE + '. ' + Style.RESET_ALL
+        self.map_icon = Fore.WHITE + Style.BRIGHT + '[]' + Style.RESET_ALL
         self.map = []
         self.exits = []
 
-    def _render_map_stub(self):
-        self.map = [
-            self.area_icon * 5,
-            self.area_icon * 5,
-            self.area_icon * 2 + Fore.BLUE + '()' + self.area_icon * 2,
-            self.area_icon * 5,
-            self.area_icon * 5 ]
+    def format_description(self):
+        lines = []
+        rest = self.description
+        for l in self.map:
+            max_len = MAX_COLS - (6 * 2)
+            if len(rest) > 0:
+                s, rest = string_utils.wrap(rest, max_len)
+                lines.append(l + '  ' + s)
+            else:
+                lines.append(l)
+        return lines
 
 class Area(Root):
-    pass
+    def _gen_z_level_maps(self, level):
+        level_map = [[None for y in range(64)] for x in range(64)]
+        for room in level:
+            x, y, _ = room.coords
+            level_map[y][x] = room
+        for room in level:
+            rx, ry, _ = room.coords
+            m = [[] for _ in range(5)]
+            for row in range(5):
+                for col in range(5):
+                    y = ry + row - 2
+                    x = rx + col - 2
+                    m[row].append(room.area_icon)
+                    if x >= 0 and y >= 0 and level_map[y][x]:
+                        m[row][col] = level_map[y][x].map_icon
+            room.map = [''.join(xs) for xs in m]
 
-def generate_map(area):
-    levels = {}
-    mapped_room = lambda x: hasattr(x, 'coords') and x.coords
-    rooms = [x for x in area.contents if mapped_room]
-    for r in rooms:
-        x, y, z = r.coords
-        if not z in levels: levels[z] = []
-        levels[z].append(r)
-    for z in levels:
-        max_x, max_y = 0, 0
-        for r in levels[z]:
+    def generate_maps(self):
+        levels = {}
+        mapped_room = lambda x: hasattr(x, 'coords') and x.coords
+        rooms = [x for x in self.contents if mapped_room]
+        for r in rooms:
             x, y, z = r.coords
-            if x > max_x: max_x = x
-            if y > max_y: max_y = y
-        print(levels[z])
-
+            if not z in levels: levels[z] = []
+            levels[z].append(r)
+        for z in levels:
+            self._gen_z_level_maps(levels[z])
 
 def parse(player, s):
     tokens = tokenizer.tokenize(s)
     cmd = command.parse(tokens)
     return world.resolve(player, cmd)
 
-def exec(cmd, player):
+def execute(cmd, player):
     if callable(cmd['f']):
         args = cmd['args']
         cmd.update({'player': player}) 
@@ -139,34 +157,77 @@ def exec(cmd, player):
 def prompt():
     return Style.BRIGHT + Fore.CYAN + "> " + Style.RESET_ALL
 
-foo = Root()
-foo.name = 'foo'
-player = Player()
-player.is_player = True
-player.wielded = 'fubar'
-room = Room()
-room.coords = (0, 0, 0)
-room._render_map_stub()
-world.move(player, room)
-world.move(foo, room)
-area = Area()
-world.move(room, area)
-
-def syntax_highlighting_stub(s):
-    s = str(s)
-    s = s.replace(':', Style.BRIGHT + Fore.YELLOW + ':' + Style.RESET_ALL)
-    s = s.replace('{', Style.BRIGHT + Fore.CYAN + '{' + Style.RESET_ALL)
-    s = s.replace('}', Style.BRIGHT + Fore.CYAN + '}' + Style.RESET_ALL)
-    return s
-
 def loop():
     while True:
         s = input(prompt())
         cmd = parse(player, s)
-        print(syntax_highlighting_stub(cmd))
+        print(cmd)
         if cmd['verb'] == '@quit': 
             break
-        exec(cmd, player)        
+        execute(cmd, player)        
+
+foo = Root()
+foo.name = 'foo'
+
+player = Player()
+player.is_player = True
+player.wielded = 'fubar'
+
+area = Area()
+
+room = Room()
+room.coords = (10, 10, 0)
+world.move(room, area)
+world.move(foo, room)
+
+room = Room()
+room.coords = (11, 10, 0)
+room.map_icon = Back.BLUE + Fore.YELLOW + Style.BRIGHT + 'Va' + Style.RESET_ALL
+world.move(room, area)
+
+room = Room()
+room.coords = (11, 11, 0)
+room.name = 'Destroyed Building'
+room.description = 'The foundation and a few walls remain but otherwise this building is completely destroyed. You might still find something of value if you look hard enough though.'
+world.move(room, area)
+world.move(player, room)
+
+room = Room()
+room.coords = (9, 9, 0)
+room.map_icon = Fore.YELLOW + '##'
+world.move(room, area)
+
+room = Room()
+room.coords = (10, 9, 0)
+room.map_icon = Fore.YELLOW + '=='
+world.move(room, area)
+
+room = Room()
+room.coords = (11, 9, 0)
+room.map_icon = Fore.YELLOW + '=='
+world.move(room, area)
+
+room = Room()
+room.coords = (12, 9, 0)
+room.map_icon = Fore.YELLOW + '=='
+world.move(room, area)
+
+room = Room()
+room.coords = (9, 10, 0)
+room.map_icon = Fore.YELLOW + '||'
+world.move(room, area)
+
+room = Room()
+room.coords = (9, 11, 0)
+room.map_icon = Fore.YELLOW + '||'
+world.move(room, area)
+
+room = Room()
+room.coords = (9, 12, 0)
+room.map_icon = Fore.YELLOW + '||'
+world.move(room, area)
+
+area.generate_maps()
 
 if __name__ == '__main__':
     loop()
