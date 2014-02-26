@@ -19,7 +19,7 @@ class Style:
     RESET_ALL   = _e(0)
     BRIGHT      = _e(1)
     DIM         = _e(2)
-    NORMAL      = _e(22)
+    NORMAL      = _e(2)
 
 class Fore:
     BLACK       = _e(30)

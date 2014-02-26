@@ -10,7 +10,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-import unittest
+import unittest 
 import match
 
 PREPOSITIONS = {
@@ -23,6 +23,7 @@ PREPOSITIONS = {
 def parse(tokens):
     args = tokens[1:]
     dobjstr, prepstr, iobjstr = parse_args(args)
+    verb = None
     return {
         'verb'      : tokens[0], 
         'args'      : args, 
