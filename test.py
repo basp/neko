@@ -95,7 +95,7 @@ class Player(Actor):
             d.append(self.location.render_exits())
             self.tell(d)
         else:
-            print("You are nowhere.")
+            self.tell("You are nowhere.")
 
     @verb('l*ook', ('any', 'none', 'none'))
     def look_thing(self, *args, **kwargs):
@@ -124,25 +124,28 @@ class Player(Actor):
 
     @verb('k*ill', ('any', 'none', 'none'))
     def kill(self, *args, **kwargs):
-        if kwargs['dobj']:
-            if kwargs['dobj'] == kwargs['player']:
+        player, dobj, dobjstr = kwargs['player'], kwargs['dobj'], kwargs['dobjstr']
+        if dobj:
+            if dobj == player:
                 self.kill_myself(*args, **kwargs)
             else:
-                print("You attack %s!" % kwargs['dobj'].name)
+                player.tell("You attack %s!" % dobj.name)
         elif kwargs['dobjstr']:
-            print("There is no `%s' here." % kwargs['dobjstr'])
+            player.tell("There is no `%s' here." % dobjstr)
         else:
-            print("Kill what?")
+            player.tell("Kill what?")
 
     def kill_myself(self, *args, **kwargs):
+        player = kwargs['player']
         if self.wielded:
-            print("Wow you are wielding a weapon... FAileD TO CoMPUtE~")
+            player.tell("Wow you are wielding a weapon... FAileD TO CoMPUtE~")
         else:
-            print("You try to strangle yourself but that doesn't really work.")
+            player.tell("You try to strangle yourself but that doesn't really work.")
 
     @verb('h*elp', ('any', 'any', 'any'))
     def help(self, *args, **kwargs):
-        print("Unfortunately there is nobody here to help you right now.")
+        player = kwargs['player']
+        player.tell("Unfortunately there is nobody here to help you right now.")
 
 class Room(Root):
     def __init__(self):
@@ -398,6 +401,26 @@ exit.name = 'west'
 exit.other_side = r4
 r5.exits.append(exit)
 exit.moveto(r5)
+
+room = Room()
+room.coords = (1, 12, -2)
+room.name = 'The Pit'
+room.map_icon = 'XX'
+room.area_icon = '//'
+world.move(room, area)
+r6 = room
+
+exit = Exit()
+exit.name = 'down'
+exit.other_side = r6
+r5.exits.append(exit)
+exit.moveto(r5)
+
+exit = Exit()
+exit.name = 'up'
+exit.other_side = r5
+r6.exits.append(exit)
+exit.moveto(r6)
 
 area.update()
 
