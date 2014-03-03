@@ -52,6 +52,24 @@ def pronoun_sub(text, who=None, **kwargs):
         i += 1
     return output
 
+def english_list(what, empty='nothing', and_=' and ', sep=', ', penum=','):
+    count = len(what)
+    if count == 0:
+        return empty
+    elif count == 1:
+        return str(what[0])
+    elif count == 2:
+        return str(what[0]) + and_ + str(what[1])
+    s = ''
+    for i in range(count):
+        if i > 0:
+            if i == count - 1:
+                s += penum + and_
+            else:
+                s += sep
+        s += str(what[i])
+    return s
+
 class Foo:
     def __init__(self):
         self.ps = 'he'
@@ -82,6 +100,16 @@ class TestCase(unittest.TestCase):
         self.assertEqual(wrap(s, 2), ('1', '3 5 7 9'))
         self.assertEqual(wrap(s, 3), ('1 3', '5 7 9'))
         self.assertEqual(wrap(s, 4), ('1 3', '5 7 9'))
+
+    def test_english_list(self):
+        cases = [
+            ([], 'nothing'),
+            ([1,2], '1 and 2'),
+            ([1,2,3], '1, 2, and 3'),
+            ([1,2,3,4], '1, 2, 3, and 4') ]
+        for xs, expected in cases:
+            actual = english_list(xs)
+            self.assertEqual(actual, expected)
 
 if __name__ == '__main__':
     unittest.main()

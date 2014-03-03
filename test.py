@@ -58,7 +58,18 @@ class Exit(Root):
 class Actor(Root):
     def __init__(self):
         super().__init__()
+        self.doing_msg = 'standing around'
         self.wielded = None
+
+    def act(self, time):
+        pass
+
+class Quux(Actor):
+    def __init__(self):
+        super().__init__()
+
+    def act(self, time, *args, **kwargs):
+        pass
 
 class Player(Actor):
     def __init__(self):
@@ -91,8 +102,14 @@ class Player(Actor):
     def look_around(self, *args, **kwargs):
         if self.location:
             d = self.location.render(*args, **kwargs)
-            d.append('')
-            d.append(self.location.render_exits())
+            contents = self.location.render_contents(self)
+            if contents:
+                d.append('')
+                d += contents
+            exits = self.location.render_exits()
+            if exits:
+                d.append('')
+                d += exits
             self.tell(d)
         else:
             self.tell("You are nowhere.")
@@ -166,11 +183,13 @@ class Room(Root):
         return Style.BRIGHT + self.name + Style.RESET_ALL
 
     def render_exits(self):
+        if not self.exits:
+            return []
         s = Fore.CYAN + '[ exits: '
         for e in self.exits:
             s += Style.BRIGHT + e.name + ' '
         s += Style.NORMAL + ']'
-        return s
+        return [s]
 
     def render(self, *args, **kwargs):
         player = kwargs['player']
@@ -198,6 +217,14 @@ class Room(Root):
             lines.append(s)
         return lines
 
+    def render_contents(self, player=None):
+        things = [x.name for x in self.contents if type(x) is not Exit and x != player]
+        lines = []
+        if not things:
+            return lines
+        lines.append(string_utils.english_list(things))
+        return lines
+
 class Area(Root):
     def __init__(self):
         super().__init__()
@@ -205,13 +232,13 @@ class Area(Root):
 
     def render_map(self, origin, size=5, render_player=False):
         xo, yo, zo = origin
-        m = [[] for y in range(5)]
+        m = [[] for y in range(size)]
         level_rooms, level_map = self.levels[zo]
         roomo = level_map[yo][xo]
-        for row in range(5):
-            for col in range(5):
-                y = yo + row - 2
-                x = xo + col - 2
+        for row in range(size):
+            for col in range(size):
+                y = yo + row - (size // 2)
+                x = xo + col - (size // 2)
                 m[row].append(roomo.area_icon)
                 if x >= 0 and y >= 0 and level_map[y][x]:
                     icon = level_map[y][x].map_icon
@@ -263,6 +290,9 @@ def loop():
 
 foo = Root()
 foo.name = 'foo'
+
+bar = Root()
+bar.name = 'bar'
 
 player = Player()
 player.is_player = True
@@ -368,6 +398,7 @@ room.map_icon = '[]'
 world.move(room, area)
 world.move(player, room)
 world.move(foo, room)
+world.move(bar, room)
 r4 = room
 
 exit = Exit()
