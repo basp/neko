@@ -9,6 +9,11 @@ def wrap(s, max_len):
             return s[:last_ws], s[last_ws + 1:]
     return s, ''
 
+def wrap_to_lines(s, max_len):
+    while s:
+        line, s = wrap(s, max_len)
+        yield line
+
 def _prop(obj, prop):
     if hasattr(obj, prop):
         return getattr(obj, prop)

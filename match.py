@@ -26,6 +26,7 @@ def object(s, objects):
             if n.startswith(s):
                 if found is None:
                     found = o
+                    break
                 else:
                     return Ambiguous
     return found

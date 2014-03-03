@@ -28,6 +28,9 @@ class Root(world.Object):
         super().__init__()
         self.description = 'Nothing out of the ordinary.'
 
+    def title(self):
+        return self.name
+
     def look_self(self, *args, **kwargs):
         return self.description
 
@@ -64,12 +67,16 @@ class Actor(Root):
     def act(self, time):
         pass
 
-class Quux(Actor):
+class Thing(Root):
     def __init__(self):
         super().__init__()
 
-    def act(self, time, *args, **kwargs):
-        pass
+    def title(self):
+        s = self.name
+        if s.startswith(('a', 'e', 'i', 'u', 'o', 'A', 'E', 'I', 'U', 'O')):
+            return 'an ' + self.name
+        else:
+            return 'a ' + self.name
 
 class Player(Actor):
     def __init__(self):
@@ -102,11 +109,11 @@ class Player(Actor):
     def look_around(self, *args, **kwargs):
         if self.location:
             d = self.location.render(*args, **kwargs)
-            contents = self.location.render_contents(self)
+            contents = self.location.render_things(*args, **kwargs)
             if contents:
                 d.append('')
                 d += contents
-            exits = self.location.render_exits()
+            exits = self.location.render_exits(*args, **kwargs)
             if exits:
                 d.append('')
                 d += exits
@@ -173,23 +180,24 @@ class Room(Root):
         self.exits = []
 
     def render_map(self):
-        # Location should be Area
+        # Location should be an Area
         return self.location.render_map(self.coords, render_player=True)
 
-    def render_description(self):
+    def render_description(self, *args, **kwargs):
         return self.description
 
-    def render_name(self):
+    def render_name(self, *args, **kwargs):
         return Style.BRIGHT + self.name + Style.RESET_ALL
 
-    def render_exits(self):
+    def render_exits(self, *args, **kwargs):
+        player = kwargs['player']
         if not self.exits:
             return []
         s = Fore.CYAN + '[ exits: '
         for e in self.exits:
             s += Style.BRIGHT + e.name + ' '
         s += Style.NORMAL + ']'
-        return [s]
+        return string_utils.wrap_to_lines(s, player.wrap)
 
     def render(self, *args, **kwargs):
         player = kwargs['player']
@@ -197,9 +205,10 @@ class Room(Root):
         i0 = 0
         m = self.render_map()
         if len(self.name) > 0:
-            lines.append(m[0] + '  ' + self.render_name())
+            lines.append(m[0] + '  ' + self.render_name(*args, **kwargs))
             i0 = 1
-        rest = self.render_description()
+        # TODO: Fix this so we can pass in map size
+        rest = self.render_description(*args, **kwargs)
         max_len = player.wrap - (6 * 2)
         for i in range(i0, len(m)):
             l = m[i]
@@ -217,13 +226,13 @@ class Room(Root):
             lines.append(s)
         return lines
 
-    def render_contents(self, player=None):
-        things = [x.name for x in self.contents if type(x) is not Exit and x != player]
-        lines = []
+    def render_things(self, *args, **kwargs):
+        player = kwargs['player']
+        things = [x.title() for x in self.contents if type(x) is Thing]
         if not things:
-            return lines
-        lines.append(string_utils.english_list(things))
-        return lines
+            return []
+        d = "You see %s on the floor." % string_utils.english_list(things)
+        return string_utils.wrap_to_lines(d, player.wrap)
 
 class Area(Root):
     def __init__(self):
@@ -288,11 +297,14 @@ def loop():
             break
         execute(cmd, player)        
 
-foo = Root()
-foo.name = 'foo'
+foo = Thing()
+foo.name = 'rusty nail'
+foo.aliases = {'nail'}
+foo.description = "A rusty casing nail. It's a little crooked."
 
-bar = Root()
-bar.name = 'bar'
+bar = Thing()
+bar.name = 'orange'
+bar.description = "It's covered in mold. It's probably a bad idea to eat this."
 
 player = Player()
 player.is_player = True
