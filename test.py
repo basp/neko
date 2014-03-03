@@ -59,7 +59,12 @@ class Exit(Root):
 
     def look_self(self, *args, **kwargs):
         if self.other_side:
-            return self.other_side.render(**kwargs)
+            d = self.other_side.render(*args, **kwargs)
+            mobs = self.other_side.render_mobs(*args, **kwargs)
+            if mobs:
+                d.append('')
+                d += mobs
+            return d
 
 class Thing(Root):
     def __init__(self):
@@ -258,15 +263,15 @@ class Area(Root):
         super().__init__()
         self.levels = {}
 
-    def render_map(self, origin, size=5, render_player=False):
+    def render_map(self, origin, render_player=False):
         xo, yo, zo = origin
-        m = [[] for y in range(size)]
+        m = [[] for y in range(5)]
         level_rooms, level_map = self.levels[zo]
         roomo = level_map[yo][xo]
-        for row in range(size):
-            for col in range(size):
-                y = yo + row - (size // 2)
-                x = xo + col - (size // 2)
+        for row in range(5):
+            for col in range(5):
+                y = yo + row - (5 // 2)
+                x = xo + col - (5 // 2)
                 m[row].append(roomo.area_icon)
                 if x >= 0 and y >= 0 and level_map[y][x]:
                     icon = level_map[y][x].map_icon
@@ -317,12 +322,14 @@ class Alana(Mob):
     def _render_act(self, act):
         return Style.BRIGHT + Fore.YELLOW + act + Style.RESET_ALL
 
-    def act(self, time):
+    def act(self, time, *args, **kwargs):
+        player = kwargs['player']
         if not self.location and self.location.exits:
             return
         if random.randint(0, 10) < 3:
             i = random.randint(0, len(self.location.exits) - 1)
-            print(self._render_act(self.location.exits[i].name))
+            exit = self.location.exits[i]
+            return exit.invoke(self) # TODO: incorporate duration
 
 class World:
     def __init__(self):
@@ -340,7 +347,7 @@ def execute(cmd, player, actors=[]):
         dur = cmd['f'](*args, **cmd)
         if dur and dur > 0:
             for actor in actors:
-                actor.act(time=dur)
+                actor.act(time=dur, *args, **cmd)
     else:
         player.tell("That's not something you can do right now.")    
 
