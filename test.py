@@ -10,11 +10,12 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-import tokenizer
 import command
-import world
-import string_utils
 import match
+import random
+import string_utils
+import tokenizer
+import world
 
 from verb import verb
 from ansi import Style, Fore, Back
@@ -49,23 +50,16 @@ class Exit(Root):
     def __init__(self):
         super().__init__()
         self.other_side = None
+        self.dur = 10
 
     def invoke(self, what, *args, **kwargs):
         if self.other_side:
             what.moveto(self.other_side)
+        return self.dur
 
     def look_self(self, *args, **kwargs):
         if self.other_side:
             return self.other_side.render(**kwargs)
-
-class Actor(Root):
-    def __init__(self):
-        super().__init__()
-        self.doing_msg = 'standing around'
-        self.wielded = None
-
-    def act(self, time):
-        pass
 
 class Thing(Root):
     def __init__(self):
@@ -78,7 +72,7 @@ class Thing(Root):
         else:
             return 'a ' + self.name
 
-class Player(Actor):
+class Player(Root):
     def __init__(self):
         super().__init__()
         self.debug = DEFAULT_DEBUG
@@ -109,10 +103,14 @@ class Player(Actor):
     def look_around(self, *args, **kwargs):
         if self.location:
             d = self.location.render(*args, **kwargs)
-            contents = self.location.render_things(*args, **kwargs)
-            if contents:
+            mobs = self.location.render_mobs(*args, **kwargs)
+            if mobs:
                 d.append('')
-                d += contents
+                d += mobs
+            things = self.location.render_things(*args, **kwargs)
+            if things:
+                d.append('')
+                d += things
             exits = self.location.render_exits(*args, **kwargs)
             if exits:
                 d.append('')
@@ -132,7 +130,7 @@ class Player(Actor):
     @verb('u*p d*own e*ast w*est n*orth s*outh ne northe*ast nw northw*est se southe*ast sw southw*est', ('none', 'none', 'none'))
     def go_direction(self, *args, **kwargs):
         kwargs['dobjstr'] = kwargs['verb']
-        self.go(self, *args, **kwargs)
+        return self.go(self, *args, **kwargs)
 
     @verb('g*o', ('any', 'none', 'none'))
     def go(self, *args, **kwargs):
@@ -141,8 +139,9 @@ class Player(Actor):
         if exit is match.Ambiguous:
             player.tell("I'm not sure which way `%s' you mean." % dobjstr)
         elif exit:
-            exit.invoke(self, *args, **kwargs)
+            dur = exit.invoke(self, *args, **kwargs)
             player.look_around(*args, **kwargs)
+            return dur
         else:
             player.tell("You can't go that way.")
 
@@ -228,10 +227,30 @@ class Room(Root):
 
     def render_things(self, *args, **kwargs):
         player = kwargs['player']
-        things = [x.title() for x in self.contents if type(x) is Thing]
+        things = [x.title() for x in self.contents if isinstance(x, Thing)]
         if not things:
             return []
         d = "You see %s on the floor." % string_utils.english_list(things)
+        return string_utils.wrap_to_lines(d, player.wrap)
+
+    def render_mobs(self, *args, **kwargs):
+        player = kwargs['player']
+        mobs = [x for x in self.contents if isinstance(x, Mob)]
+        if not mobs:
+            return []
+        d = ""
+        groups = {}
+        for m in mobs:
+            doing = m.doing()
+            if not doing in groups:
+                groups[doing] = []
+            groups[doing].append(m.title())
+        for doing in groups:
+            actors = groups[doing]
+            verb = "is"
+            if len(actors) > 1:
+                verb = "are"
+            d += "%s %s %s here." % (string_utils.english_list(actors), verb, doing)
         return string_utils.wrap_to_lines(d, player.wrap)
 
 class Area(Root):
@@ -269,23 +288,66 @@ class Area(Root):
             level_map[y][x] = r
             level_rooms.append(r)
 
+
+class Actor(Root):
+    def __init__(self):
+        super().__init__()
+
+    def act(self, time):
+        pass
+
+class Mob(Actor):
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self.doing_msg = 'standing'
+
+    def doing(self):
+        return self.doing_msg
+
+    def title(self):
+        return self.name
+
+class Alana(Mob):
+    def __init__(self):
+        super().__init__('Alana')
+        self.description = 'A big (for a cat at least) orange furball. He looks up at you curiously.'
+        self.doing_msg = 'walking around'
+
+    def _render_act(self, act):
+        return Style.BRIGHT + Fore.YELLOW + act + Style.RESET_ALL
+
+    def act(self, time):
+        if not self.location and self.location.exits:
+            return
+        if random.randint(0, 10) < 3:
+            i = random.randint(0, len(self.location.exits) - 1)
+            print(self._render_act(self.location.exits[i].name))
+
+class World:
+    def __init__(self):
+        self.mobs = []
+
 def parse(player, s):
     tokens = tokenizer.tokenize(s)
     cmd = command.parse(tokens)
     return world.resolve(player, cmd)
 
-def execute(cmd, player):
+def execute(cmd, player, actors=[]):
     if callable(cmd['f']):
         args = cmd['args']
         cmd.update({'player': player}) 
-        cmd['f'](*args, **cmd)
+        dur = cmd['f'](*args, **cmd)
+        if dur and dur > 0:
+            for actor in actors:
+                actor.act(time=dur)
     else:
         player.tell("That's not something you can do right now.")    
 
 def prompt():
     return Style.BRIGHT + Fore.CYAN + "> " + Style.RESET_ALL
 
-def loop():
+def loop(actors=[]):
     while True:
         s = input(prompt())
         if not s:
@@ -295,7 +357,7 @@ def loop():
             print(cmd)
         if cmd['verb'] == '@quit': 
             break
-        execute(cmd, player)        
+        r = execute(cmd, player, actors)
 
 foo = Thing()
 foo.name = 'rusty nail'
@@ -305,6 +367,8 @@ foo.description = "A rusty casing nail. It's a little crooked."
 bar = Thing()
 bar.name = 'orange'
 bar.description = "It's covered in mold. It's probably a bad idea to eat this."
+
+alana = Alana()
 
 player = Player()
 player.is_player = True
@@ -347,6 +411,7 @@ room.coords = (11, 11, 0)
 room.name = 'Destroyed Building'
 room.description = DESTROYED_BUILDING
 world.move(room, area)
+world.move(alana, room)
 r3 = room
 
 exit = Exit()
@@ -363,22 +428,16 @@ exit.moveto(r3)
 
 room = Room()
 room.coords = (9, 9, 0)
-room.name = 'Destroyed Building'
-room.description = DESTROYED_BUILDING
 room.map_icon = Fore.YELLOW + '##' + Style.RESET_ALL
 world.move(room, area)
 
 room = Room()
 room.coords = (10, 9, 0)
-room.name = 'Destroyed Building'
-room.description = DESTROYED_BUILDING
 room.map_icon = Fore.YELLOW + '==' + Style.RESET_ALL
 world.move(room, area)
 
 room = Room()
 room.coords = (11, 9, 0)
-room.name = 'Destroyed Building'
-room.description = DESTROYED_BUILDING
 room.map_icon = Fore.YELLOW + '==' + Style.RESET_ALL
 world.move(room, area)
 
@@ -468,4 +527,4 @@ exit.moveto(r6)
 area.update()
 
 if __name__ == '__main__':
-    loop()
+    loop([alana])

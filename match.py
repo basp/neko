@@ -19,11 +19,12 @@ class Ambiguous:
 def object(s, objects):
     found = None
     if not s: return found
+    s = s.lower()
     for o in objects:
         if not hasattr(o, 'names'): continue
         if not callable(o.names): continue
         for n in o.names():
-            if n.startswith(s):
+            if n.lower().startswith(s):
                 if found is None:
                     found = o
                     break
