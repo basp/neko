@@ -163,10 +163,10 @@ class Player(Root):
         else:
             player.tell("Kill what?")
 
-    def kill_myself(self, *args, **kwargs):
+    def kill_self(self, *args, **kwargs):
         player = kwargs['player']
         if self.wielded:
-            player.tell("Wow you are wielding a weapon... FAileD TO CoMPUtE~")
+            player.tell("You are not THAT desperate!")
         else:
             player.tell("You try to strangle yourself but that doesn't really work.")
 
@@ -184,7 +184,7 @@ class Room(Root):
         self.exits = []
 
     def render_map(self):
-        # Location should be an Area
+        # Location should be an Area instance
         return self.location.render_map(self.coords, render_player=True)
 
     def render_description(self, *args, **kwargs):
@@ -318,9 +318,6 @@ class Alana(Mob):
         super().__init__('Alana')
         self.description = 'A big (for a cat at least) orange furball. He looks up at you curiously.'
         self.doing_msg = 'walking around'
-
-    def _render_act(self, act):
-        return Style.BRIGHT + Fore.YELLOW + act + Style.RESET_ALL
 
     def act(self, time, *args, **kwargs):
         player = kwargs['player']
