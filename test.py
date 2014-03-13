@@ -82,6 +82,7 @@ class Player(Root):
         super().__init__()
         self.debug = DEFAULT_DEBUG
         self.wrap = DEFAULT_WRAP
+        self.wielded = None
 
     @verb('@wrap', ('any', 'none', 'none'))
     def set_wrap(self, *args, **kwargs):
@@ -155,7 +156,7 @@ class Player(Root):
         player, dobj, dobjstr = kwargs['player'], kwargs['dobj'], kwargs['dobjstr']
         if dobj:
             if dobj == player:
-                self.kill_myself(*args, **kwargs)
+                self.kill_self(*args, **kwargs)
             else:
                 player.tell("You attack %s!" % dobj.name)
         elif kwargs['dobjstr']:
@@ -255,7 +256,7 @@ class Room(Root):
             verb = "is"
             if len(actors) > 1:
                 verb = "are"
-            d += "%s %s %s here." % (string_utils.english_list(actors), verb, doing)
+            d += "%s %s %s here. " % (string_utils.english_list(actors), verb, doing)
         return string_utils.wrap_to_lines(d, player.wrap)
 
 class Area(Root):
@@ -295,17 +296,27 @@ class Area(Root):
 
 
 class Actor(Root):
-    def __init__(self):
+    def __init__(self, q):
         super().__init__()
+        self.q = q
+        self.dt = 0
 
-    def act(self, time):
-        pass
+    def act(self, dur, *args, **kwargs):
+        self.dt += dur
+        c = self.dt // self.q
+        self.dt = self.dt % self.q 
+        return self.perform(c, *args, **kwargs)
+
+    def perform(self, count, *args, **kwargs):
+        return []
 
 class Mob(Actor):
-    def __init__(self, name):
-        super().__init__()
+    def __init__(self, name, q):
+        super().__init__(q)
         self.name = name
         self.doing_msg = 'standing'
+        self.q = q
+        self.dt = 0
 
     def doing(self):
         return self.doing_msg
@@ -315,18 +326,32 @@ class Mob(Actor):
 
 class Alana(Mob):
     def __init__(self):
-        super().__init__('Alana')
+        super().__init__('Alana', 3)
         self.description = 'A big (for a cat at least) orange furball. He looks up at you curiously.'
         self.doing_msg = 'walking around'
 
-    def act(self, time, *args, **kwargs):
+    def perform(self, count, *args, **kwargs):
+        if count > 0:
+            return [lambda: self.move_around(*args, **kwargs)]
+
+    def move_around(self, *args, **kwargs):
         player = kwargs['player']
         if not self.location and self.location.exits:
             return
         if random.randint(0, 10) < 3:
             i = random.randint(0, len(self.location.exits) - 1)
             exit = self.location.exits[i]
-            return exit.invoke(self) # TODO: incorporate duration
+            return exit.invoke(self) # TODO: incorporate duration        
+
+
+class Rat(Mob):
+    def __init__(self):
+        super().__init__('furry rat', 10)
+        self.description = 'A small furry rat.'
+        self.doing_msg = 'scurrying around'
+
+    def title(self):
+        return 'a furry rat'
 
 class World:
     def __init__(self):
@@ -343,8 +368,13 @@ def execute(cmd, player, actors=[]):
         cmd.update({'player': player}) 
         dur = cmd['f'](*args, **cmd)
         if dur and dur > 0:
+            actions = []
             for actor in actors:
-                actor.act(time=dur, *args, **cmd)
+                actions += actor.act(dur, *args, **cmd)
+            # Spice things up so not all mob actions execute in order
+            random.shuffle(actions)
+            for action in actions:
+                action()
     else:
         player.tell("That's not something you can do right now.")    
 
@@ -360,6 +390,7 @@ def loop(actors=[]):
         if player.debug:
             print(cmd)
         if cmd['verb'] == '@quit': 
+            print("Zoning out...")
             break
         r = execute(cmd, player, actors)
 
@@ -373,10 +404,11 @@ bar.name = 'orange'
 bar.description = "It's covered in mold. It's probably a bad idea to eat this."
 
 alana = Alana()
+rat = Rat()
+rat.aliases = {'rat'}
 
 player = Player()
 player.is_player = True
-player.wielded = 'fubar'
 
 DESTROYED_BUILDING = 'The foundation and a few walls remain but otherwise this building is completely destroyed.'
 DAMP_CELLAR = 'The cellar is dark, damp and downright unpleasant.'
@@ -416,6 +448,7 @@ room.name = 'Destroyed Building'
 room.description = DESTROYED_BUILDING
 world.move(room, area)
 world.move(alana, room)
+world.move(rat, room)
 r3 = room
 
 exit = Exit()
